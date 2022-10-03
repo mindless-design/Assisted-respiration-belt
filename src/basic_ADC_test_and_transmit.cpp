@@ -125,14 +125,14 @@ size_t space_position = 0;
 
 
 void set_peltier_frequency_and_intensity (String command) {
-  if ((space_position = command.indexOf(" ")) != command.length()) { // This section of the code does not work. The comand.find() function does not exsist.
+  if ((space_position = command.indexOf(" ")) != command.length() - 1) { // This section of the code does not work. The comand.find() function does not exsist.
       frequency_in_milihertz = atoi(command.substring(0, space_position)); // The command.substring() also does not exsist.
       intensity = atoi(command.substring(space_position, command.length()-1));
   } else {
     Serial.print("No space in command string. Check input: ");
     Serial.println(command);
 
-    return -1; // Failed function call.
+    //return -1; // Failed function call.
   }
 
   if (frequency_in_milihertz <= 500 && frequency_in_milihertz >= 33 && intensity >= 0 && intensity <= 10) {
