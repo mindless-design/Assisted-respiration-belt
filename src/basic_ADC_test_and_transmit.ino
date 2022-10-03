@@ -3,6 +3,14 @@
 #include "photon_fft.h"
 #include "FIR_coeffs.h"
 
+// This is the pin the strain gauge and current source is connected to.
+const int SAMPLE_PIN = A0;
+
+// These are the digital/analog write pins that control the peltier elements.
+const int HOT_PELTIER_PIN = D0;
+const int PELTIER_ENABLE_PIN = D1;
+const int COLD_PELTIER_PIN = D2;
+
 // 512 is a good size for this buffer. This is the number of samples; the number of bytes is twice
 // this, but only half the buffer is handled a time, and then each pair of samples is averaged.
 const size_t SAMPLE_BUF_SIZE = 2048;
@@ -17,9 +25,6 @@ const int DECIMATION_FACTOR = 512;
 
 // The sample rate of the ADCs
 const int SAMPLE_RATE = SAMPLE_RATE_AFTER_DECIMATION*DECIMATION_FACTOR;
-
-// This is the pin the strain gauge and current source is connected to.
-const int SAMPLE_PIN = A0;
 
 // This is the interval that we want to calculate the FFT over in seconds.
 // Make sure that this value is of radix 2 (2^x).  
@@ -54,6 +59,79 @@ double respiration_rate_per_minute = -1;
 
 ADCDMA_config adcDMA(SAMPLE_PIN, samples, SAMPLE_BUF_SIZE);
 
+// Frequency and intensity of the peltier elements.
+int frequency_in_milihertz = 0;
+int intensity = 0;
+
+// The frequency of the heating and cooling peltier elements is controlled by a software timer with a period corresponding to the frequency given by the facilitator.
+
+int default_period = 4000;
+
+int hot_PWM_duty_cycle = 25; // Duty cycle set by an 8 bit register. Values from 0 - 255.
+int cold_PWM_duty_cycle = 50;
+
+int hot_PWM_frequency = 10; // Frequency of the PWM signal. From 1 Hz to really fast.
+int cold_PWM_frequency = 10;
+
+Timer peltier_timer((default_period/4), switch_peltiers);
+
+char state = 'D'; // H = Hot on. C = Cold on. I = Hot off. D = Cold off.
+
+void switch_peltiers() {
+
+  switch (state) {
+    case 'D' : 
+      analogWrite(HOT_PELTIER_PIN, 0);
+      analogWrite(COLD_PELTIER_PIN, 0);
+
+      state = 'H';
+      break;
+    
+    case 'I' :
+      analogWrite(HOT_PELTIER_PIN, 0);
+      analogWrite(COLD_PELTIER_PIN, 0);
+
+      state = 'C';
+      break;
+    
+    case 'H' :
+      analogWrite(HOT_PELTIER_PIN, hot_PWM_duty_cycle, hot_PWM_frequency);
+
+      state = 'I';
+      break;
+
+    case 'C' :
+      analogWrite(COLD_PELTIER_PIN, cold_PWM_duty_cycle, cold_PWM_frequency);
+
+      state = 'D';
+      break;
+  }
+}
+
+// This is the code that recieves the data from the facilitator to change the intensity or frequency of the peltier elements.
+// For the peltier element driving, we want the user to submit two values to the photon: the frequency in mHz and an intensity value on a scale of 1 - 10.
+size_t space_position = 0;
+
+/*
+void set_peltier_frequency_and_intensity (String command) {
+  if ((space_position = command.find(" ")) != String::npos) { // This section of the code does not work. The comand.find() function does not exsist.
+      frequency_in_milihertz = atoi(command.substr(0, space_position)); // The command.substring() also does not exsist.
+      intensity = atoi(command.substr(space_position, command.length()-1));
+  } else {
+    Serial.print("No space in command string. Check input: ");
+    Serial.println(command);
+
+    return -1; // Failed function call.
+  }
+
+  if (frequency_in_milihertz <= 500 && frequency_in_milihertz >= 33 && intensity >= 0 && intensity <= 10) {
+    int timer_period_in_ms = 250000/frequency_in_milihertz;
+    peltier_timer.changePeriod(timer_period_in_ms);
+    // change_peltier_intensity(intensity);
+  }
+}
+*/
+
 // setup() runs once, when the device is first turned on.
 void setup() {
 
@@ -64,6 +142,16 @@ void setup() {
 
 	// Setup for push to cloud
 	Particle.variable("respiration", respiration_rate_per_minute);
+
+  // Setup for recieving the respiration feedback data.
+  //Particle.function("frequency_and_intensity", set_peltier_frequency_and_intensity);
+
+  pinMode(HOT_PELTIER_PIN, OUTPUT);
+  pinMode(COLD_PELTIER_PIN, OUTPUT);
+  pinMode(PELTIER_ENABLE_PIN, OUTPUT);
+
+  digitalWrite(PELTIER_ENABLE_PIN, HIGH);
+  peltier_timer.start();
 }
 
 // loop() runs over and over again, as quickly as it can execute.
