@@ -27,5 +27,6 @@
         "xutility": "cpp"
     },
     "particle.firmwareVersion": "5.0.1",
-    "particle.targetPlatform": "argon"
+    "particle.targetPlatform": "argon",
+    "C_Cpp.errorSquiggles": "Disabled"
 }

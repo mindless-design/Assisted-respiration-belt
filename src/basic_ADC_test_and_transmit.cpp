@@ -1,9 +1,20 @@
+/******************************************************/
+//       THIS IS A GENERATED FILE - DO NOT EDIT       //
+/******************************************************/
+
+#include "Particle.h"
+#line 1 "/Users/kristopherngo/Documents/GitHub/Assisted-respiration-belt/src/basic_ADC_test_and_transmit.ino"
 #include <math.h>
 #include "photon_adc_dma.h"
 #include "photon_fft.h"
 #include "FIR_coeffs.h"
 
 // This is the pin the strain gauge and current source is connected to.
+void switch_peltiers();
+void set_peltier_frequency_and_intensity (String command);
+void setup();
+void loop();
+#line 7 "/Users/kristopherngo/Documents/GitHub/Assisted-respiration-belt/src/basic_ADC_test_and_transmit.ino"
 const int SAMPLE_PIN = A0;
 
 // These are the digital/analog write pins that control the peltier elements.
@@ -121,7 +132,7 @@ void set_peltier_frequency_and_intensity (String command) {
     Serial.print("No space in command string. Check input: ");
     Serial.println(command);
 
-    //return -1; // Failed function call.
+    return -1; // Failed function call.
   }
 
   if (frequency_in_milihertz <= 500 && frequency_in_milihertz >= 33 && intensity >= 0 && intensity <= 10) {
