@@ -144,7 +144,7 @@ void setup() {
 	Particle.variable("respiration", respiration_rate_per_minute);
 
   // Setup for recieving the respiration feedback data.
-  //Particle.function("frequency_and_intensity", set_peltier_frequency_and_intensity);
+  Particle.function("frequency_and_intensity", set_peltier_frequency_and_intensity);
 
   pinMode(HOT_PELTIER_PIN, OUTPUT);
   pinMode(COLD_PELTIER_PIN, OUTPUT);
