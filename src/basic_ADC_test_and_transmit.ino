@@ -114,7 +114,7 @@ size_t space_position = 0;
 
 
 void set_peltier_frequency_and_intensity (String command) {
-  if ((space_position = command.indexOf(" ")) != command.length() - 1) { // This section of the code does not work. The comand.find() function does not exsist.
+  if ((space_position = command.indexOf(" ")) != command.length()) { // This section of the code does not work. The comand.find() function does not exsist.
       frequency_in_milihertz = atoi(command.substring(0, space_position)); // The command.substring() also does not exsist.
       intensity = atoi(command.substring(space_position, command.length()-1));
   } else {
