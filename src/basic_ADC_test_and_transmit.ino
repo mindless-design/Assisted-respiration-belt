@@ -67,8 +67,8 @@ int intensity = 0;
 
 int default_period = 4000;
 
-int hot_PWM_duty_cycle = 25; // Duty cycle set by an 8 bit register. Values from 0 - 255.
-int cold_PWM_duty_cycle = 50;
+int hot_PWM_duty_cycle = 50; // Duty cycle set by an 8 bit register. Values from 0 - 255.
+int cold_PWM_duty_cycle = 100;
 
 int hot_PWM_frequency = 10; // Frequency of the PWM signal. From 1 Hz to really fast.
 int cold_PWM_frequency = 10;
@@ -113,7 +113,7 @@ void switch_peltiers() {
 size_t space_position = 0;
 
 
-void set_peltier_frequency_and_intensity (String command) {
+int set_peltier_frequency_and_intensity (String command) {
   if ((space_position = command.indexOf(" ")) != command.length() - 1) { // This section of the code does not work. The comand.find() function does not exsist.
       frequency_in_milihertz = atoi(command.substring(0, space_position)); // The command.substring() also does not exsist.
       intensity = atoi(command.substring(space_position, command.length()-1));
@@ -121,14 +121,17 @@ void set_peltier_frequency_and_intensity (String command) {
     Serial.print("No space in command string. Check input: ");
     Serial.println(command);
 
-    //return -1; // Failed function call.
+    return -1; // Failed function call.
   }
 
   if (frequency_in_milihertz <= 500 && frequency_in_milihertz >= 33 && intensity >= 0 && intensity <= 10) {
     int timer_period_in_ms = 250000/frequency_in_milihertz;
     peltier_timer.changePeriod(timer_period_in_ms);
     // change_peltier_intensity(intensity);
+
+    return 1; // Success
   }
+  return 0;
 }
 
 
