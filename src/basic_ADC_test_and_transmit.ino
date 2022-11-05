@@ -2,6 +2,11 @@
 #include "photon_adc_dma.h"
 #include "photon_fft.h"
 #include "FIR_coeffs.h"
+#include "Ubidots.h"
+
+// Define Ubidots instances and constants
+const char *WEBHOOK_NAME = "Ubidots";
+Ubidots ubidots("webhook", UBI_PARTICLE);
 
 // This is the pin the strain gauge and current source is connected to.
 const int SAMPLE_PIN = A0;
@@ -234,6 +239,11 @@ void loop() {
       }
 
       respiration_rate_per_minute = respiration_frequency*60;
+      ubidots.add("rpm", respiration_rate_per_minute)
+      
+      bool bufferSent = false;
+
+      bufferSent = ubidots.send(WEBHOOK_NAME, PUBLIC);
 
       Particle.variable("respiration rate", respiration_rate_per_minute);
             
