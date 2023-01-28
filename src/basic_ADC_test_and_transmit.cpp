@@ -11,7 +11,8 @@
 
 // This is the pin the strain gauge and current source is connected to.
 void switch_peltiers();
-void set_peltier_frequency_and_intensity (String command);
+int set_peltier_frequency (String command);
+int set_peltier_intensity (String command);
 void setup();
 void loop();
 #line 7 "/Users/kristopherngo/Documents/GitHub/Assisted-respiration-belt/src/basic_ADC_test_and_transmit.ino"
@@ -78,8 +79,8 @@ int intensity = 0;
 
 int default_period = 4000;
 
-int hot_PWM_duty_cycle = 25; // Duty cycle set by an 8 bit register. Values from 0 - 255.
-int cold_PWM_duty_cycle = 50;
+int hot_PWM_duty_cycle = 50; // Duty cycle set by an 8 bit register. Values from 0 - 255.
+int cold_PWM_duty_cycle = 100;
 
 int hot_PWM_frequency = 10; // Frequency of the PWM signal. From 1 Hz to really fast.
 int cold_PWM_frequency = 10;
@@ -123,9 +124,10 @@ void switch_peltiers() {
 // For the peltier element driving, we want the user to submit two values to the photon: the frequency in mHz and an intensity value on a scale of 1 - 10.
 size_t space_position = 0;
 
+/* old freq/intensity function
 
-void set_peltier_frequency_and_intensity (String command) {
-  if ((space_position = command.indexOf(" ")) != command.length()) { // This section of the code does not work. The comand.find() function does not exsist.
+int set_peltier_frequency_and_intensity (String command) {
+  if ((space_position = command.indexOf(" ")) != command.length() - 1) { // This section of the code does not work. The comand.find() function does not exsist.
       frequency_in_milihertz = atoi(command.substring(0, space_position)); // The command.substring() also does not exsist.
       intensity = atoi(command.substring(space_position, command.length()-1));
   } else {
@@ -139,9 +141,31 @@ void set_peltier_frequency_and_intensity (String command) {
     int timer_period_in_ms = 250000/frequency_in_milihertz;
     peltier_timer.changePeriod(timer_period_in_ms);
     // change_peltier_intensity(intensity);
+
+    return 1; // Success
   }
+  return 0;
+}
+*/
+
+int set_peltier_frequency (String command) {
+  frequency_in_milihertz = atoi(command);
+  if (frequency_in_milihertz <= 500 && frequency_in_milihertz >= 33) {
+    int timer_period_in_ms = 250000/frequency_in_milihertz;
+    peltier_timer.changePeriod(timer_period_in_ms);
+    return 1; //success
+  }
+  return 0;
 }
 
+int set_peltier_intensity (String command) {
+  intensity = atoi(command);
+  if (intensity >= 0 && intensity <= 10) {
+   //change_peltier_intensity(intensity); 
+   return 1; //Success
+  }
+  return 0;
+}
 
 // setup() runs once, when the device is first turned on.
 void setup() {
@@ -155,7 +179,8 @@ void setup() {
 	Particle.variable("respiration", respiration_rate_per_minute);
 
   // Setup for recieving the respiration feedback data.
-  //Particle.function("frequency_and_intensity", set_peltier_frequency_and_intensity);
+  Particle.function("frequency", set_peltier_frequency);
+  Particle.function("intensity", set_peltier_intensity);
 
   pinMode(HOT_PELTIER_PIN, OUTPUT);
   pinMode(COLD_PELTIER_PIN, OUTPUT);
