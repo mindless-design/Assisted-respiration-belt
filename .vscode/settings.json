@@ -26,7 +26,8 @@
         "xtr1common": "cpp",
         "xutility": "cpp"
     },
-    "particle.firmwareVersion": "5.0.1",
-    "particle.targetPlatform": "argon",
-    "C_Cpp.errorSquiggles": "Disabled"
+    "particle.firmwareVersion": "3.3.0",
+    "particle.targetPlatform": "photon",
+    "C_Cpp.errorSquiggles": "Disabled",
+    "particle.targetDevice": "river"
 }

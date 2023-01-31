@@ -12,7 +12,8 @@
 // This is the pin the strain gauge and current source is connected to.
 void switch_peltiers();
 int set_peltier_frequency (String command);
-int set_peltier_intensity (String command);
+int set_hot_peltier_intensity (String command);
+int set_cold_peltier_intensity (String command);
 void setup();
 void loop();
 #line 7 "/Users/kristopherngo/Documents/GitHub/Assisted-respiration-belt/src/basic_ADC_test_and_transmit.ino"
@@ -73,14 +74,15 @@ ADCDMA_config adcDMA(SAMPLE_PIN, samples, SAMPLE_BUF_SIZE);
 
 // Frequency and intensity of the peltier elements.
 int frequency_in_milihertz = 0;
-int intensity = 0;
+int hot_intensity = 0;
+int cold_intensity = 0;
 
 // The frequency of the heating and cooling peltier elements is controlled by a software timer with a period corresponding to the frequency given by the facilitator.
 
 int default_period = 4000;
 
-int hot_PWM_duty_cycle = 50; // Duty cycle set by an 8 bit register. Values from 0 - 255.
-int cold_PWM_duty_cycle = 100;
+int hot_PWM_duty_cycle = 255; // Duty cycle set by an 8 bit register. Values from 0 - 255.
+int cold_PWM_duty_cycle = 255;
 
 int hot_PWM_frequency = 10; // Frequency of the PWM signal. From 1 Hz to really fast.
 int cold_PWM_frequency = 10;
@@ -153,18 +155,33 @@ int set_peltier_frequency (String command) {
   if (frequency_in_milihertz <= 500 && frequency_in_milihertz >= 33) {
     int timer_period_in_ms = 250000/frequency_in_milihertz;
     peltier_timer.changePeriod(timer_period_in_ms);
-    return 1; //success
+    return frequency_in_milihertz; //success
   }
-  return 0;
+  else {
+    return -1;
+  }
 }
 
-int set_peltier_intensity (String command) {
-  intensity = atoi(command);
-  if (intensity >= 0 && intensity <= 10) {
-   //change_peltier_intensity(intensity); 
-   return 1; //Success
+int set_hot_peltier_intensity (String command) {
+  hot_intensity = atoi(command);
+  if (hot_intensity >= 0 && hot_intensity <= 10) {
+   hot_PWM_duty_cycle = hot_intensity * ;
+   return hot_intensity; //Success
   }
-  return 0;
+  else {
+    return -1;
+  }
+}
+
+int set_cold_peltier_intensity (String command) {
+  cold_intensity = atoi(command);
+  if (cold_intensity >= 0 && cold_intensity <= 10) {
+   cold_PWM_duty_cycle = cold_intensity * 25;
+   return cold_intensity; //Success
+  }
+  else {
+    return -1;
+  }
 }
 
 // setup() runs once, when the device is first turned on.
@@ -180,7 +197,8 @@ void setup() {
 
   // Setup for recieving the respiration feedback data.
   Particle.function("frequency", set_peltier_frequency);
-  Particle.function("intensity", set_peltier_intensity);
+  Particle.function("hot intensity", set_hot_peltier_intensity);
+  Particle.function("cold intensity", set_cold_peltier_intensity);
 
   pinMode(HOT_PELTIER_PIN, OUTPUT);
   pinMode(COLD_PELTIER_PIN, OUTPUT);
