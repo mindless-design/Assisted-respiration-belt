@@ -48,6 +48,7 @@ const int BINS_TO_BE_CUT_OFF = 2;
 std::vector<double> fft_window_data_real;
 std::vector<double> fft_window_data_imag;
 
+
 // Data is copied into this vector so that we can save previous data chunks.
 std::vector<double> fft_window_data_copy;
 
@@ -274,7 +275,8 @@ void loop() {
 
       respiration_rate_per_minute = respiration_frequency*60;
 
-      Particle.variable("respiration rate", respiration_rate_per_minute);
+      Particle.publish("respiration rate", String(respiration_rate_per_minute));
+      //Particle.variable("respiration rate", respiration_rate_per_minute);
             
       Serial.print("respiration ");
       Serial.println(respiration_rate_per_minute, 4);
